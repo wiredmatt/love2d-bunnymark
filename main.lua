@@ -4,6 +4,9 @@ local HEIGHT = 600
 local ADD_AMOUNT = 1000
 local REMOVE_AMOUNT = 10000
 
+local SHOW_FPS = true
+local SHOW_STATS = false
+
 ---@type love.Image
 local image
 
@@ -19,7 +22,7 @@ local bunnies = {}
 
 local MAX_BUNNIES = 85000
 
-love.load = function ()
+love.load = function()
     love.window.setMode(WIDTH, HEIGHT, { resizable = false })
     image = love.graphics.newImage("assets/wabbit_alpha.png")
     bunny_texture_width = image:getWidth()
@@ -27,18 +30,27 @@ love.load = function ()
     batch = love.graphics.newSpriteBatch(image, MAX_BUNNIES)
 end
 
-love.draw = function ()
-    love.graphics.setColor(1,1,1,1)
+love.draw = function()
+    love.graphics.setColor(1, 1, 1, 1)
     love.graphics.draw(batch)
 
-    love.graphics.setColor(1,1,1,1)
-    love.graphics.rectangle("fill", 0,0, WIDTH, 16)
+    if SHOW_FPS then
+        love.graphics.setColor(1, 1, 1, 1)
+        love.graphics.rectangle("fill", 0, 0, WIDTH, 16)
+        love.graphics.setColor(0, 0, 0, 1)
+        love.graphics.print("#bunnies: " .. #bunnies .. " | fps: " .. love.timer.getFPS(), 0, 0)
+    end
 
-    love.graphics.setColor(0,0,0,1)
-    love.graphics.print("#bunnies: " .. #bunnies .. " | fps: " .. love.timer.getFPS(), 0, 0)
+    if SHOW_STATS then
+        local stats = love.graphics.getStats()
+        love.graphics.setColor(1, 1, 1, 1)
+        love.graphics.rectangle("fill", 0, HEIGHT - 16, WIDTH, 16)
+        love.graphics.setColor(0, 0, 0, 1)
+        love.graphics.print("stats" .. "| drawcalls: " .. stats.drawcalls .. "| images: " .. stats.images, 0, HEIGHT - 16)
+    end
 end
 
-love.update = function (dt)
+love.update = function(dt)
     local i = 1
     local count = #bunnies
     while i <= count do
@@ -47,12 +59,12 @@ love.update = function (dt)
         bunny.position.y = bunny.position.y + bunny.speed.y * dt
 
         local center_x = bunny.position.x + bunny_texture_width / 2
-        local centerY = bunny.position.y + bunny_texture_height / 2
+        local center_y = bunny.position.y + bunny_texture_height / 2
 
         if center_x > WIDTH or center_x < 0 then
             bunny.speed.x = -bunny.speed.x
         end
-        if centerY > HEIGHT or centerY < 0 then
+        if center_y > HEIGHT or center_y < 0 then
             bunny.speed.y = -bunny.speed.y
         end
 
@@ -63,20 +75,20 @@ love.update = function (dt)
     end
 end
 
-local spawn_bunnies = function (x, y)
+local spawn_bunnies = function(x, y)
     local count = #bunnies
 
     for i = 1, ADD_AMOUNT do
         local bunny = {
-            position = {x = x, y = y},
+            position = { x = x, y = y },
             speed = {
                 x = love.math.random(-250, 250),
                 y = love.math.random(-250, 250)
             },
             color = {
-                r = love.math.random(50/255, 240/255),
-                g = love.math.random(80/255, 240/255),
-                b = love.math.random(100/255, 240/255)
+                r = love.math.random(50 / 255, 240 / 255),
+                g = love.math.random(80 / 255, 240 / 255),
+                b = love.math.random(100 / 255, 240 / 255)
             }
         }
         bunnies[count + i] = bunny
@@ -85,7 +97,7 @@ local spawn_bunnies = function (x, y)
     end
 end
 
-local despawn_bunnies = function ()
+local despawn_bunnies = function()
     -- Determine how many bunnies to remove (up to 10000)
     local count_to_remove = math.min(REMOVE_AMOUNT, #bunnies)
 
@@ -110,7 +122,7 @@ end
 love.mousereleased = function(x, y, button)
     if button == 1 then -- right click = spawn
         spawn_bunnies(x, y)
-    else -- left click = despawn
+    else                -- left click = despawn
         despawn_bunnies()
     end
 end
