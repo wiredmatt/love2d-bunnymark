@@ -1,6 +1,9 @@
 local WIDTH = 800
 local HEIGHT = 600
 
+local ADD_AMOUNT = 1000
+local REMOVE_AMOUNT = 10000
+
 ---@type love.Image
 local image
 
@@ -43,17 +46,17 @@ love.update = function (dt)
         bunny.position.x = bunny.position.x + bunny.speed.x * dt
         bunny.position.y = bunny.position.y + bunny.speed.y * dt
 
-        local centerX = bunny.position.x + bunny_texture_width / 2
+        local center_x = bunny.position.x + bunny_texture_width / 2
         local centerY = bunny.position.y + bunny_texture_height / 2
 
-        if centerX > WIDTH or centerX < 0 then
+        if center_x > WIDTH or center_x < 0 then
             bunny.speed.x = -bunny.speed.x
         end
         if centerY > HEIGHT or centerY < 0 then
             bunny.speed.y = -bunny.speed.y
         end
 
-        -- Reusing the position in the batch
+        -- setColor for each is actually expensive, removing this line improves performance vastly.
         batch:setColor(bunny.color.r, bunny.color.g, bunny.color.b, 1)
         batch:set(i, bunny.position.x, bunny.position.y)
         i = i + 1
@@ -62,9 +65,8 @@ end
 
 local spawn_bunnies = function (x, y)
     local count = #bunnies
-    local maxToSpawn = 1000
-    
-    for i = 1, maxToSpawn do
+
+    for i = 1, ADD_AMOUNT do
         local bunny = {
             position = {x = x, y = y},
             speed = {
@@ -78,16 +80,34 @@ local spawn_bunnies = function (x, y)
             }
         }
         bunnies[count + i] = bunny
-        
-        -- We only need to add a single sprite to the batch at this point
+
         batch:add(bunny.position.x, bunny.position.y)
     end
 end
 
 local despawn_bunnies = function ()
+    -- Determine how many bunnies to remove (up to 10000)
+    local count_to_remove = math.min(REMOVE_AMOUNT, #bunnies)
+
+    -- If there are bunnies to remove, slice the bunnies table starting from the 1001st bunny
+    if count_to_remove > 0 then
+        -- Directly slice the table from the `count_to_remove + 1` to the end
+        local new_bunnies = {}
+        for i = count_to_remove + 1, #bunnies do
+            table.insert(new_bunnies, bunnies[i])
+        end
+        bunnies = new_bunnies
+    end
+
+    -- Clear the SpriteBatch and re-add remaining bunnies
+    batch:clear()
+    for i = 1, #bunnies do
+        local bunny = bunnies[i]
+        batch:add(bunny.position.x, bunny.position.y)
+    end
 end
 
-love.mousereleased = function(x, y, button, istouch, presses)
+love.mousereleased = function(x, y, button)
     if button == 1 then -- right click = spawn
         spawn_bunnies(x, y)
     else -- left click = despawn
