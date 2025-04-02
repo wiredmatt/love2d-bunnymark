@@ -10,6 +10,9 @@ local SHOW_STATS = false
 ---@type love.Image
 local image
 
+---@type love.Quad
+local quad
+
 ---@type love.SpriteBatch
 local batch
 
@@ -24,9 +27,10 @@ local MAX_BUNNIES = 85000
 
 love.load = function()
     love.window.setMode(WIDTH, HEIGHT, { resizable = false })
-    image = love.graphics.newImage("assets/wabbit_alpha.png")
-    bunny_texture_width = image:getWidth()
-    bunny_texture_height = image:getHeight()
+    image = love.graphics.newImage("assets/tiny.png")
+    quad = love.graphics.newQuad(0, 112, 16, 16, image)
+    bunny_texture_width = 16
+    bunny_texture_height = 16
     batch = love.graphics.newSpriteBatch(image, MAX_BUNNIES)
 end
 
@@ -70,7 +74,7 @@ love.update = function(dt)
 
         -- setColor for each is actually expensive, removing this line improves performance vastly.
         batch:setColor(bunny.color.r, bunny.color.g, bunny.color.b, 1)
-        batch:set(i, bunny.position.x, bunny.position.y)
+        batch:set(i, quad, bunny.position.x, bunny.position.y)
         i = i + 1
     end
 end
@@ -93,7 +97,7 @@ local spawn_bunnies = function(x, y)
         }
         bunnies[count + i] = bunny
 
-        batch:add(bunny.position.x, bunny.position.y)
+        batch:add(quad, bunny.position.x, bunny.position.y, 1, 1, 0, 0, 0, 0)
     end
 end
 
