@@ -3,9 +3,13 @@ local CFG = require("cfg")
 ---@class SOAApproach: bmApproach
 local SOA = {
     bunnycount = 0,
-    positions = {},
-    speeds = {},
-    colors = {},
+    pos_x = {},
+    pos_y = {},
+    spd_x = {},
+    spd_y = {},
+    clr_r = {},
+    clr_g = {},
+    clr_b = {},
     Setup = function(self, img, imgw, imgh, sb)
         self.img = img
         self.imgw = imgw
@@ -13,83 +17,82 @@ local SOA = {
         self.sb = sb
     end,
     Update = function(self, dt)
-        local i = 1
         local count = self.bunnycount
+        local pos_x, pos_y = self.pos_x, self.pos_y
+        local spd_x, spd_y = self.spd_x, self.spd_y
+        local clr_r, clr_g, clr_b = self.clr_r, self.clr_g, self.clr_b
+        local sb = self.sb
+        local half_imgw, half_imgh = self.imgw / 2, self.imgh / 2
+        local width, height = CFG.WIDTH, CFG.HEIGHT
 
-        while i <= count do
-            local bunny_pos = self.positions[i]
-            local bunny_spd = self.speeds[i]
-            bunny_pos.x = bunny_pos.x + bunny_spd.x * dt
-            bunny_pos.y = bunny_pos.y + bunny_spd.y * dt
+        for i = 1, count do
+            local x = pos_x[i] + spd_x[i] * dt
+            local y = pos_y[i] + spd_y[i] * dt
+            pos_x[i], pos_y[i] = x, y
 
-            local center_x = bunny_pos.x + self.imgw / 2
-            local center_y = bunny_pos.y + self.imgh / 2
-
-            if center_x > CFG.WIDTH or center_x < 0 then
-                bunny_spd.x = -bunny_spd.x
+            if x + half_imgw > width or x + half_imgw < 0 then
+                spd_x[i] = -spd_x[i]
             end
-            if center_y > CFG.HEIGHT or center_y < 0 then
-                bunny_spd.y = -bunny_spd.y
+            if y + half_imgh > height or y + half_imgh < 0 then
+                spd_y[i] = -spd_y[i]
             end
 
-            -- setColor for each is actually expensive, removing this line improves performance vastly.
-            local bunny_clr = self.colors[i]
-            self.sb:setColor(bunny_clr.r, bunny_clr.g, bunny_clr.b, 1)
-            self.sb:set(i, bunny_pos.x, bunny_pos.y)
-            i = i + 1
+            sb:setColor(clr_r[i], clr_g[i], clr_b[i], 1)
+            sb:set(i, x, y)
         end
     end,
     SpawnBunnies = function(self, x, y)
         local count = self.bunnycount
+        local pos_x, pos_y = self.pos_x, self.pos_y
+        local spd_x, spd_y = self.spd_x, self.spd_y
+        local clr_r, clr_g, clr_b = self.clr_r, self.clr_g, self.clr_b
+        local sb = self.sb
 
         for i = 1, CFG.ADD_AMOUNT do
             local bunnyidx = count + i
+            pos_x[bunnyidx], pos_y[bunnyidx] = x, y
+            spd_x[bunnyidx] = love.math.random(-250, 250)
+            spd_y[bunnyidx] = love.math.random(-250, 250)
+            clr_r[bunnyidx] = love.math.random(50 / 255, 240 / 255)
+            clr_g[bunnyidx] = love.math.random(80 / 255, 240 / 255)
+            clr_b[bunnyidx] = love.math.random(100 / 255, 240 / 255)
 
-            local pos = { x = x, y = y }
-            self.positions[bunnyidx] = pos
-            self.speeds[bunnyidx] = {
-                x = love.math.random(-250, 250),
-                y = love.math.random(-250, 250),
-            }
-            self.colors[bunnyidx] = {
-                r = love.math.random(50 / 255, 240 / 255),
-                g = love.math.random(80 / 255, 240 / 255),
-                b = love.math.random(100 / 255, 240 / 255)
-            }
-
-            self.sb:add(pos.x, pos.y)
+            sb:setColor(clr_r[bunnyidx], clr_g[bunnyidx], clr_b[bunnyidx], 1)
+            sb:add(x, y)
         end
 
         self.bunnycount = count + CFG.ADD_AMOUNT
     end,
     DespawnBunnies = function(self)
-        -- Determine how many bunnies to remove (up to 10000)
         local count_to_remove = math.min(CFG.REMOVE_AMOUNT, self.bunnycount)
+        local old_count = self.bunnycount
+        local new_count = old_count - count_to_remove
 
-        -- If there are bunnies to remove, slice the bunnies table starting from the 1001st bunny
         if count_to_remove > 0 then
-            local new_pos = {}
-            local new_spd = {}
-            local new_clr = {}
+            local pos_x, pos_y = self.pos_x, self.pos_y
+            local spd_x, spd_y = self.spd_x, self.spd_y
+            local clr_r, clr_g, clr_b = self.clr_r, self.clr_g, self.clr_b
 
-            for i = count_to_remove + 1, self.bunnycount do
-                table.insert(new_pos, self.positions[i])
-                table.insert(new_spd, self.speeds[i])
-                table.insert(new_clr, self.colors[i])
+            for i = 1, new_count do
+                local source = i + count_to_remove
+                pos_x[i], pos_y[i] = pos_x[source], pos_y[source]
+                spd_x[i], spd_y[i] = spd_x[source], spd_y[source]
+                clr_r[i], clr_g[i], clr_b[i] = clr_r[source], clr_g[source], clr_b[source]
             end
 
-            self.positions = new_pos
-            self.speeds = new_spd
-            self.colors = new_clr
+            for i = old_count, new_count + 1, -1 do
+                pos_x[i], pos_y[i] = nil, nil
+                spd_x[i], spd_y[i] = nil, nil
+                clr_r[i], clr_g[i], clr_b[i] = nil, nil, nil
+            end
 
-            self.bunnycount = self.bunnycount - count_to_remove
+            self.bunnycount = new_count
         end
 
-        -- Clear the SpriteBatch and re-add remaining bunnies
         self.sb:clear()
         for i = 1, self.bunnycount do
-            local pos = self.positions[i]
-            self.sb:add(pos.x, pos.y)
+            self.sb:setColor(self.clr_r[i], self.clr_g[i], self.clr_b[i], 1)
+            self.sb:add(self.pos_x[i], self.pos_y[i])
         end
     end
 }
