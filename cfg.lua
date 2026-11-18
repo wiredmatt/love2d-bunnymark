@@ -6,7 +6,8 @@ local CFG = {
     SHOW_FPS = true,
     SHOW_STATS = false,
     MAX_BUNNIES = 85000,
-    APPROACH = "aos"
+    ---@type bmImplementationId
+    IMPL_ID = "gpu"
 }
 
 return CFG

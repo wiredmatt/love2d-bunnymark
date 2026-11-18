@@ -1,6 +1,6 @@
 local CFG = require("cfg")
 
----@class SOAApproach: bmApproach
+---@class SOAApproach: bmImplementation
 local SOA = {
     bunnycount = 0,
     pos_x = {},

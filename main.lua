@@ -11,7 +11,7 @@ local imgw
 ---@type number
 local imgh
 
----@type bmApproach
+---@type bmImplementation
 local Impl = nil
 
 love.load = function()
@@ -19,16 +19,23 @@ love.load = function()
     image = love.graphics.newImage("assets/wabbit_alpha.png")
     imgw = image:getWidth()
     imgh = image:getHeight()
-    sb = love.graphics.newSpriteBatch(image, CFG.MAX_BUNNIES)
 
-    Impl = require(CFG.APPROACH)
+    if CFG.IMPL_ID ~= "gpu" then
+        sb = love.graphics.newSpriteBatch(image, CFG.MAX_BUNNIES)
+    end
+
+    Impl = require(CFG.IMPL_ID)
 
     Impl:Setup(image, imgw, imgh, sb)
 end
 
 love.draw = function()
     love.graphics.setColor(1, 1, 1, 1)
-    love.graphics.draw(sb)
+    if Impl.Draw then
+        Impl:Draw()
+    else
+        love.graphics.draw(sb)
+    end
 
     if CFG.SHOW_FPS then
         love.graphics.setColor(1, 1, 1, 1)
@@ -36,7 +43,7 @@ love.draw = function()
         love.graphics.setColor(0, 0, 0, 1)
         love.graphics.print(
             "#bunnies: " .. Impl.bunnycount ..
-            " | approach: " .. CFG.APPROACH ..
+            " | approach: " .. CFG.IMPL_ID ..
             " | fps: " .. love.timer.getFPS(), 0, 0)
     end
 
