@@ -14,15 +14,15 @@ love .
 
 ### 1. sb_soa (SpriteBatch + Structure of Arrays)
 
-set [cfg.lua](./cfg.lua)'s `APPROACH` to `"sb_soa"`
+set [cfg.lua](./cfg.lua)'s `IMPL_ID` to `"sb_soa"`
 
 ### 2. sb_aos (SpriteBatch + Array of Structures)
 
-set [cfg.lua](./cfg.lua)'s `APPROACH` to `"sb_aos"`
+set [cfg.lua](./cfg.lua)'s `IMPL_ID` to `"sb_aos"`
 
 ### 3. gpu (GPU Instancing)
 
-set [cfg.lua](./cfg.lua)'s `APPROACH` to `"gpu"`
+set [cfg.lua](./cfg.lua)'s `IMPL_ID` to `"gpu"`
 
 ## Credits
 
