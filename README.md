@@ -29,6 +29,8 @@ set [cfg.lua](./cfg.lua)'s `IMPL_ID` to `"gpu"`
 - [raylib [textures] example - bunnymark](https://www.raylib.com/examples/textures/loader.html?name=textures_bunnymark)
 - [wabbit_alpha.png](https://github.com/odin-lang/examples/blob/5d24fd4388552d2bd6baf830230dcd045cd7187d/raylib/ports/textures/resources/wabbit_alpha.png)
 - [OpenGL Tutorial 21 - Instancing](https://www.youtube.com/watch?v=TOPvFvL_GRY)
+- [love.graphics.drawInstanced](https://love2d.org/wiki/love.graphics.drawInstanced)
+- [AoS vs. SoA](https://www.youtube.com/watch?v=Dj3lkfIEUyA) - Even though LuaJIT doesn't emit SIMD instructions, SoA still helps with reducing memory allocations and reducing GC pressure.
 
 ## LICENSE
 
